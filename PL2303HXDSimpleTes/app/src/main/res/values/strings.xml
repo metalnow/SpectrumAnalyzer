@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">PL2303HXDSimpleTes</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="PL2303HXD_Set_BaudRate">BaudRate</string>
+    <string name="PL2303HXD_OpenCOMPort">Open</string>
+    <string name="PL2303HXD_WriteData">Write</string>
+    <string name="PL2303HXD_ReadData">ReadData</string>
+    <string name="PL2303HXD_StartThread">Start</string>
+    <string name="PL2303HXD_StopThread">Stop</string>
+    <string name="PL2303HXD_LoopBack">LoopBack</string>
+    <string name="PL2303HXD_SetVIDPID">Connecting New VID PID</string>
+
+</resources>
