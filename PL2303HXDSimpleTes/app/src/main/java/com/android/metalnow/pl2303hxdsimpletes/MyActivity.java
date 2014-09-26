@@ -82,6 +82,9 @@ public class MyActivity extends Activity {
 
     private String strStr;
 
+    public GraphSpectrum graphSpectrum;
+    private static Thread thread;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -154,10 +157,42 @@ public class MyActivity extends Activity {
 
         }
 
+        graphSpectrum = new GraphSpectrum();
+        
+        /*
+        thread = new Thread() {
+          public void run()
+          {
+            for (int i = 0; i < 15; i++) 
+            {
+              try {
+                Thread.sleep(2000);
+              } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+              }
+              //Point p = MockData.getDataFromReceiver(i); // We got new data!
+              graphSpectrum.addNewValue(p); // Add it to our graph
+              view.repaint();
+            }
+          }
+        };
+        thread.start();
+        */
+        
         Log.d(TAG, "Leave onCreate");
 
     }
 
+    /*
+    @Override
+    protected void onStart() {
+      super.onStart();
+      view = graphSpectrum.getView(this);
+      setContentView(view);
+    }
+    */
+    
     @Override
     protected void onDestroy() {
         Log.d(TAG, "Enter onDestroy");
@@ -230,6 +265,59 @@ public class MyActivity extends Activity {
         }
     }
 
+    /*cc2500 data parsing*/
+    /*
+    int[] datapoints = new int[nPoints];
+    int[] maxes = new int[nPoints];
+    int[][] averages = new int[nPoints][2];
+
+    int chan=0;
+    int primed=0;
+    
+    void serialEvent(Serial myPort)
+    {
+      rssi = myPort.readChar();
+      if ((rssi & 0x01) == 0x01) // '1' in lowest bit indicates start of frame (0th channel data)
+      {
+        chan=0;
+        primed = 1;
+      }
+      else
+      {
+        chan++;
+      }
+
+      // convert rssi byte to real output in dBm. After killing off LSB, output is in signed (dBm*2 + offset).
+      rssi = rssi & 0xfe;
+      rssi = ss(rssi);
+      println("chan = " + chan + " rssi = " + rssi + " (" + binary(rssi, 8) + ")");
+      rssi = rssi/2 - rssi_offset;
+
+      if (primed != 0)
+      {
+          {
+            datapoints[chan] = rssi;
+            averages[chan][0] = averages[chan][0] + rssi;
+            averages[chan][1] = averages[chan][1] + 1;
+            if (rssi > maxes[chan])
+            {
+              maxes[chan] = rssi;
+            }
+          }
+      }
+    }
+
+
+    private int ss(int unsigned)
+    {
+      if (unsigned < 128)
+      {
+        unsigned = (256 - unsigned);
+      }
+      return unsigned; // now signed...
+    }    
+    */
+    
 
 
     private void openUsbSerial() {
