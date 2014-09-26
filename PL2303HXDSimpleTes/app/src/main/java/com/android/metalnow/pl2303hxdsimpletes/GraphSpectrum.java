@@ -31,10 +31,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Paint.Align;
 
-import com.gnychis.ubertooth.UbertoothMain;
-import com.gnychis.ubertooth.DeviceHandlers.UbertoothOne;
-
-
 public class GraphSpectrum {
 	
   private GraphicalView view;
