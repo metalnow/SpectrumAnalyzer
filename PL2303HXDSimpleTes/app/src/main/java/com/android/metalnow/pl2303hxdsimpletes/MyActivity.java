@@ -84,16 +84,17 @@ public class MyActivity extends Activity {
 
     public GraphSpectrum graphSpectrum;
     private static Thread thread;
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my);
-        if (savedInstanceState == null) {
+/*        if (savedInstanceState == null) {
             getFragmentManager().beginTransaction()
                     .add(R.id.container, new PlaceholderFragment())
                     .commit();
         }
+*/
 
         PL2303HXD_BaudRate_spinner = (Spinner)findViewById(R.id.spinner1);
 
@@ -158,7 +159,7 @@ public class MyActivity extends Activity {
         }
 
         graphSpectrum = new GraphSpectrum();
-        
+
         /*
         thread = new Thread() {
           public void run()
