@@ -31,12 +31,14 @@ import android.util.Log;
 import android.hardware.usb.UsbManager;
 import android.content.Context;
 
+import org.achartengine.GraphicalView;
+
 import java.io.IOException;
 import java.util.Random;
 
 public class MyActivity extends Activity {
 
-    private static final boolean SHOW_DEBUG = true;
+    private static final boolean SHOW_DEBUG = false;
 
     // Defines of Display Settings
     private static final int DISP_CHAR = 0;
@@ -85,6 +87,8 @@ public class MyActivity extends Activity {
     public GraphSpectrum graphSpectrum;
     private static Thread thread;
 
+    private static GraphicalView view;
+    private static boolean gettingData = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -160,32 +164,11 @@ public class MyActivity extends Activity {
 
         graphSpectrum = new GraphSpectrum();
 
-        /*
-        thread = new Thread() {
-          public void run()
-          {
-            for (int i = 0; i < 15; i++) 
-            {
-              try {
-                Thread.sleep(2000);
-              } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-              }
-              //Point p = MockData.getDataFromReceiver(i); // We got new data!
-              graphSpectrum.addNewValue(p); // Add it to our graph
-              view.repaint();
-            }
-          }
-        };
-        thread.start();
-        */
-        
         Log.d(TAG, "Leave onCreate");
 
     }
 
-    /*
+   /*
     @Override
     protected void onStart() {
       super.onStart();
@@ -193,6 +176,7 @@ public class MyActivity extends Activity {
       setContentView(view);
     }
     */
+
     
     @Override
     protected void onDestroy() {
@@ -267,14 +251,23 @@ public class MyActivity extends Activity {
     }
 
     /*cc2500 data parsing*/
-    /*
+    int rssi_offset = 72;  // CC2500's RSSI baseline offset in dBm.
+    int nPoints = 256;
     int[] datapoints = new int[nPoints];
     int[] maxes = new int[nPoints];
     int[][] averages = new int[nPoints][2];
 
     int chan=0;
     int primed=0;
-    
+    int rssi;
+
+    double freqMin = 2.400; // base frequency (ch. 0) in GHz
+    double freqStep = 0.000405; // channel spacing
+    double axisStep = .005; // axis display spacing
+
+    double freqMax = freqMin + (256*freqStep);  //2.50368;
+
+    /*
     void serialEvent(Serial myPort)
     {
       rssi = myPort.readChar();
@@ -307,7 +300,7 @@ public class MyActivity extends Activity {
           }
       }
     }
-
+*/
 
     private int ss(int unsigned)
     {
@@ -316,10 +309,86 @@ public class MyActivity extends Activity {
         unsigned = (256 - unsigned);
       }
       return unsigned; // now signed...
-    }    
-    */
-    
+    }
 
+    private void renderSpectrum()
+    {
+        int len;
+        byte[] rbuf = new byte[4096];
+
+        Log.d(TAG, "Enter readDataFromSerial");
+
+        if(null==mSerial)
+            return;
+
+        if(!mSerial.isConnected())
+            return;
+
+        len = mSerial.read(rbuf);
+        if(len<0) {
+            Log.d(TAG, "Fail to bulkTransfer(read data)");
+            return;
+        }
+
+        if (len > 0) {
+            if (SHOW_DEBUG) {
+                Log.d(TAG, "read len : " + len);
+            }
+            for (int j = 0; j < len; j++) {
+
+                rssi = rbuf[j];
+                if ((rssi & 0x01) == 0x01) // '1' in lowest bit indicates start of frame (0th channel data)
+                {
+                    chan=0;
+                    primed = 1;
+                }
+                else
+                {
+                    chan++;
+                }
+
+                if ( chan >= nPoints )
+                    continue;
+
+                //int org_rssi = rssi;
+
+                // convert rssi byte to real output in dBm. After killing off LSB, output is in signed (dBm*2 + offset).
+                rssi = rssi & 0xfe;
+                rssi = ss(rssi);
+                //Log.d(TAG, "chan = " + chan + " rssi = " + rssi + " (" +  Integer.toHexString(org_rssi) + ")");
+                rssi = rssi/2 - rssi_offset;
+
+                if (primed != 0)
+                {
+                    {
+                        datapoints[chan] = rssi;
+                        averages[chan][0] = averages[chan][0] + rssi;
+                        averages[chan][1] = averages[chan][1] + 1;
+                        if (rssi > maxes[chan])
+                        {
+                            maxes[chan] = rssi;
+                        }
+                    }
+                }
+
+                graphSpectrum.updateCurrentValue(freqMin + freqStep * chan, datapoints[chan] ); // Add it to our graph
+                view.repaint();
+            }
+        }
+        else {
+            if (SHOW_DEBUG) {
+                Log.d(TAG, "read len : 0 ");
+            }
+            return;
+        }
+/*
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+*/
+    }
 
     private void openUsbSerial() {
         Log.d(TAG, "Enter  openUsbSerial");
@@ -358,6 +427,30 @@ public class MyActivity extends Activity {
                 }
             } else {
                 Toast.makeText(this, "connected", Toast.LENGTH_SHORT).show();
+                view = graphSpectrum.getView(this);
+                setContentView(view);
+
+                thread = new Thread() {
+                    public void run()
+                    {
+                        gettingData = true;
+                        while (gettingData)
+                        {
+                            try {
+                                Thread.sleep(2000);
+                            } catch (InterruptedException e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                            }
+
+                            renderSpectrum();
+                            view.repaint();
+                        }
+                    }
+                };
+                thread.start();
+
+
             }
         }//isConnected
 

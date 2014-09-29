@@ -84,8 +84,8 @@ public class GraphSpectrum {
     mRenderer.setYTitle("Signal Strength (dBm)");
     mRenderer.setXAxisMin(2.400);
     mRenderer.setXAxisMax(2.50368);
-    mRenderer.setYAxisMin(-100);
-    mRenderer.setYAxisMax(0);
+    mRenderer.setYAxisMin(0);
+    mRenderer.setYAxisMax(100);
     mRenderer.setAxesColor(Color.LTGRAY);
     mRenderer.setLabelsColor(Color.LTGRAY);
     
@@ -101,9 +101,14 @@ public class GraphSpectrum {
 		view =  ChartFactory.getLineChartView(context, mDataset, mRenderer);
 		return view;
 	}
-	
-	public void addNewValue(double freq, double db)
+
+	public void updateCurrentValue(double freq, double db)
 	{
+        try {
+            dataset.remove(dataset.getIndexForKey(freq));
+        } catch (Exception e) {
+        }
+
 		dataset.add(freq, db);
 	}
   
