@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">CC2500Visualizer</string>
+    <string name="action_settings">Settings</string>
+    <string name="PL2303HXD_Set_BaudRate">BaudRate</string>
+    <string name="PL2303HXD_OpenCOMPort">Open</string>
+    <string name="BaudRate">BaudRate</string>
+    <string name="Graph_Clear">Clear</string>
+
+</resources>
