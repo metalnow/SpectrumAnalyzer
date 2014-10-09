@@ -122,7 +122,8 @@ public class MainActivity extends Activity {
         Log.d(TAG, "Leave onDestroy");
     }
 
-    public void onResume() {
+    @Override
+    protected void onResume() {
         Log.d(TAG, "Enter onResume");
         super.onResume();
         String action =  getIntent().getAction();
@@ -143,8 +144,23 @@ public class MainActivity extends Activity {
             }
         }//if isConnected
         Toast.makeText(this, "attached", Toast.LENGTH_SHORT).show();
+        //startRenderSpectrumThread();
 
         Log.d(TAG, "Leave onResume");
+    }
+
+    @Override
+    protected void onPause()
+    {
+        gettingData = false;
+        super.onPause();
+    }
+
+    @Override
+    protected void onStop()
+    {
+        gettingData = false;
+        super.onStop();
     }
 
 
@@ -163,7 +179,7 @@ public class MainActivity extends Activity {
     double freqStep = 0.000405; // channel spacing
     double axisStep = .005; // axis display spacing
 
-    double freqMax = freqMin + (256*freqStep);  //2.50368;
+    double freqMax = freqMin + (nPoints*freqStep);  //2.50368;
 
     private int ss(int unsigned)
     {
@@ -181,11 +197,10 @@ public class MainActivity extends Activity {
 
         Log.d(TAG, "Enter readDataFromSerial");
 
-        if(null==mSerial)
+        if(null==mSerial || !mSerial.isConnected()) {
+            gettingData = false;
             return;
-
-        if(!mSerial.isConnected())
-            return;
+        }
 
         len = mSerial.read(rbuf);
         if(len<0) {
@@ -235,6 +250,8 @@ public class MainActivity extends Activity {
                 }
 
                 graphSpectrum.updateCurrentValue(freqMin + freqStep * chan, datapoints[chan] ); // Add it to our graph
+                graphSpectrum.updateMaximumValue(freqMin + freqStep * chan, maxes[chan]);
+                graphSpectrum.updateAverageValue(freqMin + freqStep * chan, averages[chan][0] / averages[chan][1] ); // Add it to our graph
                 graphicalView.repaint();
             }
         }
@@ -242,15 +259,31 @@ public class MainActivity extends Activity {
             if (SHOW_DEBUG) {
                 Log.d(TAG, "read len : 0 ");
             }
-            return;
         }
-/*
-        try {
-            Thread.sleep(50);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-*/
+    }
+
+    private void startRenderSpectrumThread()
+    {
+        gettingData = false;
+        thread = new Thread() {
+            public void run()
+            {
+                gettingData = true;
+                while (gettingData)
+                {
+                    renderSpectrum();
+                    graphicalView.repaint();
+
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
+            }
+        };
+        thread.start();
     }
 
     private void openUsbSerial() {
@@ -290,28 +323,7 @@ public class MainActivity extends Activity {
                 }
             } else {
                 Toast.makeText(this, "connected", Toast.LENGTH_SHORT).show();
-
-                thread = new Thread() {
-                    public void run()
-                    {
-                        gettingData = true;
-                        while (gettingData)
-                        {
-                            try {
-                                Thread.sleep(2000);
-                            } catch (InterruptedException e) {
-                                // TODO Auto-generated catch block
-                                e.printStackTrace();
-                            }
-
-                            renderSpectrum();
-                            graphicalView.repaint();
-                        }
-                    }
-                };
-                thread.start();
-
-
+                startRenderSpectrumThread();
             }
         }//isConnected
 
