@@ -212,6 +212,7 @@ public class MainActivity extends Activity {
             if (SHOW_DEBUG) {
                 Log.d(TAG, "read len : " + len);
             }
+            boolean draw = false;
             for (int j = 0; j < len; j++) {
 
                 rssi = rbuf[j];
@@ -219,16 +220,17 @@ public class MainActivity extends Activity {
                 {
                     chan=0;
                     primed = 1;
+                    draw = true;
                 }
                 else
                 {
                     chan++;
                 }
 
-                if ( chan >= nPoints )
+                if ( chan >= nPoints ) {
+                    Log.d(TAG, "Chan unable to reset");
                     continue;
-
-                //int org_rssi = rssi;
+                }
 
                 // convert rssi byte to real output in dBm. After killing off LSB, output is in signed (dBm*2 + offset).
                 rssi = rssi & 0xfe;
@@ -249,10 +251,23 @@ public class MainActivity extends Activity {
                     }
                 }
 
+                if ( draw )
+                {
+                    draw = false;
+                    graphSpectrum.cleanData();
+                    for (int i = 0; i < nPoints; ++i )
+                    {
+                        graphSpectrum.addValues(freqMin + freqStep * i, datapoints[i], maxes[i], averages[i][0] == 0 ? 0 : averages[i][0] / averages[i][1]  );
+                    }
+                    graphicalView.repaint();
+                }
+                /*
                 graphSpectrum.updateCurrentValue(freqMin + freqStep * chan, datapoints[chan] ); // Add it to our graph
                 graphSpectrum.updateMaximumValue(freqMin + freqStep * chan, maxes[chan]);
-                graphSpectrum.updateAverageValue(freqMin + freqStep * chan, averages[chan][0] / averages[chan][1] ); // Add it to our graph
+                graphSpectrum.updateAverageValue(freqMin + freqStep * chan, averages[chan][0] == 0 ? 0 : averages[chan][0] / averages[chan][1] ); // Add it to our graph
                 graphicalView.repaint();
+                */
+
             }
         }
         else {
@@ -273,13 +288,14 @@ public class MainActivity extends Activity {
                 {
                     renderSpectrum();
                     graphicalView.repaint();
-
+/*
                     try {
                         Thread.sleep(2000);
                     } catch (InterruptedException e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
                     }
+*/
                 }
             }
         };

@@ -17,17 +17,6 @@
         android:text="@string/PL2303HXD_OpenCOMPort"
         android:layout_alignParentEnd="true" />
 
-    <Button
-        android:id="@+id/btnClear"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="false"
-        android:text="@string/Graph_Clear"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@+id/btnOpen"
-        android:layout_marginTop="10dp" />
-
     <Spinner
         android:id="@+id/spnBaudRate"
         android:layout_width="wrap_content"
@@ -51,7 +40,7 @@
         android:id="@+id/SpectrumLayout"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_below="@+id/btnClear"
+        android:layout_below="@+id/btnOpen"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true">
 

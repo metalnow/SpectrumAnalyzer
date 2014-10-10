@@ -43,10 +43,10 @@ public class GraphSpectrum {
         // Add single dataset to multiple dataset
         //mDataset.addSeries(dataset);
         mDataset.addSeries(datasetMaximum);
-        mDataset.addSeries(datasetCurrent);
         mDataset.addSeries(datasetAverage);
+        mDataset.addSeries(datasetCurrent);
 
-        int[] colors = new int[] { Color.BLUE, Color.CYAN, Color.GRAY };
+        int[] colors = new int[] { Color.CYAN, Color.GRAY, Color.BLUE };
         //PointStyle[] styles = new PointStyle[] { PointStyle.POINT, PointStyle.POINT, PointStyle.POINT, PointStyle.POINT };
 
         int length = colors.length;
@@ -76,8 +76,8 @@ public class GraphSpectrum {
         mRenderer.setShowGrid(true);
         mRenderer.setXLabelsAlign(Align.RIGHT);
         mRenderer.setYLabelsAlign(Align.RIGHT);
-        mRenderer.setPanLimits(new double[] { -50, 300, -150, 0 });
-        mRenderer.setZoomLimits(new double[] { -50, 300, -150, 0 });
+        mRenderer.setPanLimits(new double[] { 2.4, 2.50368, 0, 100 });
+        mRenderer.setZoomLimits(new double[] { 2.4, 2.50368, 0, 100 });
 
         mRenderer.setChartTitle("2.4GHz Spectrum");
         mRenderer.setXTitle("Frequency");
@@ -101,6 +101,20 @@ public class GraphSpectrum {
 		view =  ChartFactory.getBarChartView(context, mDataset, mRenderer, Type.STACKED);
 		return view;
 	}
+
+    public void cleanData()
+    {
+        datasetAverage.clear();
+        datasetCurrent.clear();
+        datasetMaximum.clear();
+    }
+
+    public void addValues( double freq, double current, double maximum, double average )
+    {
+        datasetCurrent.add(freq, current);
+        datasetMaximum.add(freq, maximum);
+        datasetAverage.add(freq, average);
+    }
 
 	public void updateCurrentValue(double freq, double db)
 	{
